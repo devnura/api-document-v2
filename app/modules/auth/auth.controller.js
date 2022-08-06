@@ -315,7 +315,7 @@ const logoutUser = async (req, res) => {
     // generate unique code
     uniqueCode = helper.getUniqueCode()
 
-    const code = req.user_code;
+    const code = req.code;
 
     const deleteRefreshToken = await model.deleteRefreshToken(code)
 
