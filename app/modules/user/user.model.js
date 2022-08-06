@@ -67,7 +67,6 @@ const getUser = async (params, trx) => {
   return result;
 };
 
-// GET USER
 const insertUser = async (data, payload, trx) => {
 
   let result = await trx("t_m_user")
@@ -114,7 +113,7 @@ const resetPassword = async (params, data, payload, trx) => {
   let rows = await trx("public.t_m_user").update({
     "e_password" : data.passwordHash,
     "c_knowing_password" : data.knowingPassword,
-    "i_updated_by": payload.user_code,
+    "c_updated_by": payload.user_code,
     "n_updated_by": payload.user_name,
     "d_updated_at": trx.raw('NOW()')
   }, ["c_code"])
@@ -132,7 +131,7 @@ const deleteUser = async (params, payload, trx) => {
   let rows = await trx('public.t_m_user').update({
       "c_status": "X",
       "c_status_name" : "DELETED",
-      "i_deleted_by" : payload.user_code,
+      "c_deleted_by" : payload.user_code,
       "n_deleted_by" : payload.user_name,
       "d_deleted_at": trx.raw('NOW()')
     }, ['c_code'])

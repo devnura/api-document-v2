@@ -31,4 +31,17 @@ router.put(
   controller.updateUser
 );
 
+router.put(
+  "/reset-password/:code",
+  auth.authenticateToken,
+  controller.validate('resetPassword'),
+  controller.resetPassword
+);
+
+router.delete(
+  "/delete/:code",
+  auth.authenticateToken,
+  controller.deleteUser
+);
+
 module.exports = router;
