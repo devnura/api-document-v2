@@ -1,5 +1,6 @@
 const CryptoJS = require("crypto-js");
 const {v4} = require('uuid');
+const crypto = require("crypto")
 // ENCRYPT TEXT
 const encryptText = (text) => {
   try {
@@ -25,8 +26,18 @@ function getUniqueCode() {
   return v4();
 }
 
+// DECRYPT TEXT
+const getRandomStrig = () => {
+  try {
+    return crypto.randomBytes(4).toString('hex');
+  } catch (error) {
+    return error.message;
+  }
+};
+
 module.exports = {
   encryptText,
   decryptText,
-  getUniqueCode
+  getUniqueCode,
+  getRandomStrig
 };

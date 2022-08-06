@@ -78,9 +78,9 @@ const authenticateToken = (req, res, next) => {
         });
       }
 
-      req.user_code = helper.decryptText(data.user_code);
-      req.user_group = helper.decryptText(data.user_group);
-      req.user_name = helper.decryptText(data.user_name);
+      req.code = helper.decryptText(data.code);
+      req.group = helper.decryptText(data.group);
+      req.name = helper.decryptText(data.name);
 
       next();
     });
