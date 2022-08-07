@@ -24,7 +24,9 @@ const router = express.Router();
 
 const authRoute = require("./app/routes/auth.routes");
 const userRoute = require("./app/routes/user.routes");
-const docummentRoute = require("./app/routes/documment.routes");
+const documentRoute = require("./app/routes/documment.routes");
+const groupRoute = require("./app/routes/group.routes");
+
 app.use('/static', express.static('public'))
 // app.use(express.static(path.join(__dirname, 'public')));
 //route v1
@@ -38,7 +40,8 @@ app.get("/", (req, res) => {
 
 router.use("/auth", authRoute);
 router.use("/user", userRoute);
-router.use("/document", docummentRoute);
+router.use("/document", documentRoute);
+router.use("/group", groupRoute);
 
 if (!fs.existsSync(`${process.cwd()}/public/assets/uploads/pdf`)){
   fs.mkdirSync(`${process.cwd()}/public/assets/uploads/pdf`);
