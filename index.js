@@ -11,7 +11,7 @@ const bodyParser = require("body-parser");
 // const __filename = url(import.meta.url);
 // const __dirname = dirname(__filename);
 
-console.log( __dirname)
+// console.log( __dirname)
 const winston = require("./app/helpers/winston.logger");
 
 app.use(cors());
