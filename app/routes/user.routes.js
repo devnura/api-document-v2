@@ -39,7 +39,7 @@ router.put(
 );
 
 router.delete(
-  "/delete/:code",
+  "/:code",
   auth.authenticateToken,
   controller.deleteUser
 );

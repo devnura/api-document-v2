@@ -17,18 +17,20 @@ const router = express.Router();
 
 const authRoute = require("./app/routes/auth.routes");
 const userRoute = require("./app/routes/user.routes");
+const docummentRoute = require("./app/routes/documment.routes");
 
 //route v1
 app.use('/api/v1/', router);
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Welcome to logistic app.",
+    message: "Welcome to document app.",
   });
 });
 
 router.use("/auth", authRoute);
 router.use("/user", userRoute);
+router.use("/document", docummentRoute);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8000;
