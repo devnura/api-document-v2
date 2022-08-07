@@ -200,7 +200,7 @@ exports.create = async (req, res) => {
 
             const documentCode = await model.generateCode(trx)
 
-            let dir = `${process.cwd()}/public/assets/uploads/pdf/${documentCode}/`;
+            let dir = `/public/assets/uploads/pdf/${documentCode}/`;
 
             body = {
                 ...body,
