@@ -231,7 +231,7 @@ exports.create = async (req, res) => {
             }
 
             if (!fs.existsSync(dir)){
-              fs.mkdirSync(dir);
+                fs.mkdirSync(dir);
             }
 
             for (const item of body.detail) {
