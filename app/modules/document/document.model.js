@@ -3,8 +3,8 @@ const findAllDocument = async (trx) => {
     .select(
       "tdd.c_document_code",
       "tdd.c_document_name",
-      "tdd.c_document_url",
-      "tdd.q_document_item",
+      "tdd.c_document_path",
+      trx.raw("tdd.q_document_item::varchar"),
       trx.raw(`(SELECT
           COUNT(tddd.c_file_code)
         FROM
@@ -39,7 +39,7 @@ const findDocument = async (params, trx) => {
       "tdd.i_document_excel",
       "tdd.c_document_code",
       "tdd.c_document_name",
-      "tdd.c_document_url",
+      "tdd.c_document_path",
       "tdd.q_document_item",
       trx.raw(`(SELECT
         COUNT(tddd.c_file_code)
@@ -78,11 +78,9 @@ const findDocument = async (params, trx) => {
       )
       .from('doc.t_d_document_detail as tddd')
       .where("tddd.i_document_excel", result.i_document_excel)
-
-      return {
-        result,
-        detail : detail
-      }
+      result = {...result, ...{detail : detail}}
+      
+      return result
 
     }
     return result
@@ -90,19 +88,28 @@ const findDocument = async (params, trx) => {
 
 const insertDocument = async (data, payload, trx) => {
 
-  let result = await trx("t_m_user")
+  let result = await trx("doc.t_d_document")
     .insert({
       "c_document_code" : data.c_document_code,
       "c_document_name" : data.c_document_name,
-      // "c_document_url" : data.c_document_url,
-      "q_document_item" : data.q_document_item,
+      "c_document_path" : data.c_document_path,
+      "q_document_item" : data.detail.length,
       "c_desc" : data.c_desc,
       "c_created_by" : payload.user_code,
       "n_created_by" : payload.user_name,
       "d_created_at" : trx.raw("NOW()") 
-    }, ['c_document_code'])
+    }, ['i_document_excel'])
     
   return result[0];
+
+};
+
+const insertDocumentDetail = async (data, trx) => {
+
+  let result = await trx("doc.t_d_document_detail")
+    .insert(data, ['c_file_code'])
+
+  return result;
 
 };
 
@@ -156,7 +163,13 @@ const checkDuplicatedInsert = async (data, trx) => {
 }
 
 const generateCode = async (trx) => {
-  let result = await trx.raw("SELECT 'DXLS'||to_char(NOW(), 'YYMMDD')||LPAD((COUNT(i_document_exceli_document_excel)+1)::text, 5, '0') AS code FROM t_d_document tdd WHERE substring(c_document_code, 0,10) = 'DXLS'||to_char(now(), 'YYMMDD')")
+  let result = await trx.raw("SELECT 'DXLS'||to_char(NOW(), 'YYMMDD')||LPAD((COUNT(i_document_excel)+1)::text, 5, '0') AS code FROM doc.t_d_document tdd WHERE substring(c_document_code, 1,10) = 'DXLS'||to_char(now(), 'YYMMDD')")
+
+  return result.rows[0].code
+}
+
+const generateCodePdf = async (trx) => {
+  let result = await trx.raw("SELECT 'DPDF'||to_char(NOW(), 'YYMMDD')||LPAD((COUNT(i_document_excel)+1)::text, 5, '0') AS code FROM doc.t_d_document_detail tdd WHERE substring(c_file_code, 1,10) = 'DPDF'||to_char(now(), 'YYMMDD')")
 
   return result.rows[0].code
 }
@@ -185,6 +198,9 @@ module.exports = {
   findAllDocument,
   findDocument,
   insertDocument,
+  insertDocumentDetail,
+  generateCodePdf,
+
   updateDocument,
   deleteDocument,
   checkDuplicatedInsert,
