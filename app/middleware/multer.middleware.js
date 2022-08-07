@@ -60,7 +60,7 @@ const pdfFilter = (req, file, cb) => {
 let pdfStorage = multer.diskStorage({
   destination: (req, file, cb) => {
 
-    let dir = process.cwd() + "/public/assets/uploads/excel/";
+    let dir = process.cwd() + "/public/assets/uploads/pdf/";
 
     if (!fs.existsSync(dir)){
       fs.mkdirSync(dir);

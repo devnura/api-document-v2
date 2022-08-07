@@ -230,8 +230,8 @@ exports.create = async (req, res) => {
                 return res.status(200).json(result);
             }
 
-            if (!fs.existsSync(dir)){
-                fs.mkdirSync(dir);
+            if (!fs.existsSync(`${process.cwd()}${dir}`)){
+                fs.mkdirSync(`${process.cwd()}${dir}`);
             }
 
             for (const item of body.detail) {
@@ -377,8 +377,8 @@ exports.uploadPdf = async (req, res) => {
           return res.status(200).json(result);
       }
   
-      let path = process.cwd() + "/public/assets/uploads/excel/" + req.file.filename;
-  
+      let path = process.cwd() + "/public/assets/uploads/pdf/" + req.file.filename;
+        //  UPDATE PDF PATH + STATUS 
       result = {
           code: "00",
           message: "Success.",
