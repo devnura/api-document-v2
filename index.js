@@ -28,8 +28,8 @@ const documentRoute = require("./app/routes/documment.routes");
 const groupRoute = require("./app/routes/group.routes");
 
 // app.use('/static', express.static('public'))
-app.use(process.env.PATH_PDF, express.static(path.join(__dirname, process.env.PATH_PDF)))
-app.use(process.env.PATH_PDF, express.static(path.join(__dirname, process.env.PATH_EXCEL)))
+app.use("/"+process.env.PATH_PDF, express.static(path.join(__dirname, process.env.PATH_PDF)))
+app.use("/"+process.env.PATH_PDF, express.static(path.join(__dirname, process.env.PATH_EXCEL)))
 // app.use(express.static(path.join(__dirname, 'public')));
 //route v1
 app.use('/api/v1/', router);

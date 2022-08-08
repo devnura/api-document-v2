@@ -217,7 +217,7 @@ exports.create = async (req, res) => {
 
             const documentCode = await model.generateCode(trx)
 
-            let dir = `/${process.env.PATH_PDF}${documentCode}/`;
+            let dir = `/${process.env.PATH_PDF}`;
 
             body = {
                 ...body,
@@ -409,7 +409,7 @@ exports.uploadPdf = async (req, res) => {
             return res.status(200).json(result);
         }
         //  ini diganti menjadi nama domain
-        let file_url = await helper.getDomainName(req) + '/' + process.env.PATH_PDF + "/" + params.folder + "/" + req.file.filename;
+        let file_url = await helper.getDomainName(req) + '/' + process.env.PATH_PDF + "" + req.file.filename;
 
         let update = await model.uploadPdf(params, file_url, payload, db)
 

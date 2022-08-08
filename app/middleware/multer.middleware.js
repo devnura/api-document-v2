@@ -62,7 +62,7 @@ const pdfFilter = (req, file, cb) => {
 let pdfStorage = multer.diskStorage({
   destination: (req, file, cb) => {
 
-    let dir = `${process.cwd()}/public/uploads/pdf/${req.params.code}`;
+    let dir = `${process.cwd()}/public/uploads/pdf`;
 
     if (!fs.existsSync(dir)){
       fs.mkdirSync(dir, {
@@ -74,7 +74,7 @@ let pdfStorage = multer.diskStorage({
 
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-YOSANGGI-${file.originalname}`);
+    cb(null, `${Date.now()}-${req.params.folder}-${req.params.code}-${file.originalname}`);
   },
 });
 
