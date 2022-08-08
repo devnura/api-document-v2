@@ -50,7 +50,8 @@ router.post("/upload-excel",
   multer.uploadExcel,
   controller.uploadExcel
 );
-router.post("/upload-pdf",
+
+router.post("/upload-pdf/:folder/:code", 
   auth.authenticateToken,
   multer.uploadPDF,
   controller.uploadPdf

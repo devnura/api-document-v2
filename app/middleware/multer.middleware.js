@@ -16,10 +16,12 @@ const excelFilter = (req, file, cb) => {
 let storageExcel = multer.diskStorage({
   destination: (req, file, cb) => {
 
-    let dir = process.cwd() + "/public/assets/uploads/excel/";
+    let dir = `${process.cwd()}/public/uploads/excel/`;
 
     if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir);
+      fs.mkdirSync(dir, {
+        recursive: true
+      });
     }
     
     return cb(null, dir);
@@ -60,10 +62,12 @@ const pdfFilter = (req, file, cb) => {
 let pdfStorage = multer.diskStorage({
   destination: (req, file, cb) => {
 
-    let dir = process.cwd() + "/public/assets/uploads/pdf/";
+    let dir = `${process.cwd()}/public/uploads/pdf/${req.params.code}`;
 
     if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir);
+      fs.mkdirSync(dir, {
+        recursive: true
+      });
     }
     
     return cb(null, dir);

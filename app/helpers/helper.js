@@ -35,9 +35,22 @@ const getRandomStrig = () => {
   }
 };
 
+const getDomainName = async (req) => {
+  var result = ""
+
+  if(req.headers["x-forwarded-host"]){                                                                                                        // server
+      result = await 'https' + '://' + req.headers["x-forwarded-host"].split(',')[0]
+  }else{                                                                                                                                      // local
+      result = await req.protocol + '://' + req.headers.host
+  }
+
+  return result
+}
+
 module.exports = {
   encryptText,
   decryptText,
   getUniqueCode,
-  getRandomStrig
+  getRandomStrig,
+  getDomainName
 };

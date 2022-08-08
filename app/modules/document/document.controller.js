@@ -1,9 +1,10 @@
+require("dotenv").config()
+
 const {
     body,
     validationResult,
     check
 } = require('express-validator')
-
 const db = require("../../../infrastructure/database/knex");
 
 const readXlsxFile = require("read-excel-file/node");
@@ -14,7 +15,9 @@ const moment = require("moment");
 moment.locale("id");
 
 const fs = require('fs')
-const { promisify } = require('util')
+const {
+    promisify
+} = require('util')
 
 const unlinkAsync = promisify(fs.unlink)
 
@@ -60,7 +63,7 @@ exports.validate = (method) => {
                     max: 64
                 }).withMessage('c_email is out of length!')
             ]
-    
+
         default:
             break;
     }
@@ -124,7 +127,21 @@ exports.find = async (req, res) => {
 
         // check data login
         let document = await model.findDocument(code, db)
-
+        if(!document) {
+            result = {
+                code: "01",
+                message: "Not found.",
+                data: document ? document : {},
+            };
+    
+            // result 
+            // log info
+            winston.logger.info(
+                `${uniqueCode} RESPONSE user : ${JSON.stringify(result)}`
+            );
+    
+            return res.status(200).json(result);
+        }
         // log debug
         winston.logger.debug(`${uniqueCode} result document : ${JSON.stringify(document)}`);
 
@@ -192,7 +209,7 @@ exports.create = async (req, res) => {
             user_code: req.code,
             user_name: req.name
         }
-        
+
         await db.transaction(async trx => {
 
             // log debug
@@ -200,7 +217,7 @@ exports.create = async (req, res) => {
 
             const documentCode = await model.generateCode(trx)
 
-            let dir = `/public/assets/uploads/pdf/${documentCode}/`;
+            let dir = `/${process.env.PATH_PDF}${documentCode}/`;
 
             body = {
                 ...body,
@@ -230,27 +247,32 @@ exports.create = async (req, res) => {
                 return res.status(200).json(result);
             }
 
-            if (!fs.existsSync(`${process.cwd()}${dir}`)){
-                fs.mkdirSync(`${process.cwd()}${dir}`);
+            if (!fs.existsSync(`${process.cwd()}${dir}`)) {
+                fs.mkdirSync(`${process.cwd()}${dir}`, {
+                    recursive: true
+                  });
             }
 
             for (const item of body.detail) {
                 let code = await model.generateCodePdf(trx)
                 let data = {
-                    "i_document_excel" : document.i_document_excel,
-                    "c_file_code" : code,
-                    "c_file_name" : item.file_name.toLowerCase(),
-                    "c_category" : item.category
+                    "i_document_excel": document.i_document_excel,
+                    "c_file_code": code,
+                    "c_file_name": item.file_name.toLowerCase(),
+                    "c_category": item.category,
+                    "c_document_code": document.c_document_code
                 }
                 await model.insertDocumentDetail(data, trx)
             }
-   
+
             // insert detail
 
             result = {
                 code: "00",
                 message: "Success.",
-                data: {document},
+                data: {
+                    document
+                },
             };
 
             // log info
@@ -278,62 +300,63 @@ exports.create = async (req, res) => {
 }
 
 exports.uploadExcel = async (req, res) => {
-  try {
+    try {
 
-    uniqueCode = helper.getUniqueCode()
-
-    // log info
-    winston.logger.info(
-        `${uniqueCode} REQUEST upload excel : ${JSON.stringify(req.body)}`
-    );
-    
-
-    if (req.file == undefined) {
-        result = {
-            code: "01",
-            message: "Please upload an excel file!",
-            data: {},
-        };
+        uniqueCode = helper.getUniqueCode()
 
         // log info
         winston.logger.info(
-            `${uniqueCode} RESPONSE delete user : ${JSON.stringify(result)}`
+            `${uniqueCode} REQUEST upload excel : ${JSON.stringify(req.body)}`
         );
 
+
+        if (req.file == undefined) {
+            result = {
+                code: "01",
+                message: "Please upload an excel file!",
+                data: {},
+            };
+
+            // log info
+            winston.logger.info(
+                `${uniqueCode} RESPONSE delete user : ${JSON.stringify(result)}`
+            );
+
+            return res.status(200).json(result);
+        }
+
+        let path = process.cwd() + '/' + process.env.PATH_EXCEL + req.file.filename;
+        // let path = await helper.getDomainName(req) + "/public/uploads/excel/" + req.file.filename;
+        const rows = await readXlsxFile(path)
+        // skip header
+        rows.shift();
+
+        let cellValues = [];
+
+        rows.forEach((row) => {
+            if (row[0] && row[1]) cellValues.push({
+                file_name: row[0].toLowerCase(),
+                category: row[1],
+            })
+        })
+
+        result = {
+            code: "00",
+            message: "Success.",
+            data: cellValues ? cellValues : {},
+        };
+
+        winston.logger.info(
+            `${uniqueCode} RESPONSE user : ${JSON.stringify(result)}`
+        );
+
+
+        // Delete the file like normal
+        await unlinkAsync(req.file.path)
+
         return res.status(200).json(result);
-    }
 
-    let path = process.cwd() + "/public/assets/uploads/excel/" + req.file.filename;
-    const rows = await readXlsxFile(path)
-    // skip header
-    rows.shift();
-    
-    let cellValues = [];
-
-    rows.forEach((row) => {
-        if(row[0] && row[1]) cellValues.push({
-            file_name: row[0].toLowerCase(),
-            category: row[1],
-          })
-    })
-
-    result = {
-        code: "00",
-        message: "Success.",
-        data: cellValues ? cellValues : {},
-    };
-
-    winston.logger.info(
-        `${uniqueCode} RESPONSE user : ${JSON.stringify(result)}`
-    );
-
-
-    // Delete the file like normal
-    await unlinkAsync(req.file.path)
-
-    return res.status(200).json(result);
-    
-  } catch (error) {
+    } catch (error) {
         // create log
         winston.logger.error(
             `500 internal server error - backend server | ${error.message}`
@@ -348,70 +371,89 @@ exports.uploadExcel = async (req, res) => {
                 error.message : "500 internal server error - backend server.",
             data: {},
         });
-  }
+    }
 }
 
 exports.uploadPdf = async (req, res) => {
     try {
-  
-      uniqueCode = helper.getUniqueCode()
-  
-      // log info
-      winston.logger.info(
-          `${uniqueCode} REQUEST upload pdf : ${JSON.stringify(req.body)}`
-      );
-      
-  
-      if (req.file == undefined) {
-          result = {
-              code: "01",
-              message: "Please upload an pdf file!",
-              data: {},
-          };
-  
-          // log info
-          winston.logger.info(
-              `${uniqueCode} RESPONSE delete user : ${JSON.stringify(result)}`
-          );
-  
-          return res.status(200).json(result);
-      }
-  
-      let path = process.cwd() + "/public/assets/uploads/pdf/" + req.file.filename;
-        //  UPDATE PDF PATH + STATUS 
-      result = {
-          code: "00",
-          message: "Success.",
-          data: {
-            "path": path,
-            "file": req.file
-          },
-      };
-  
-      winston.logger.info(
-          `${uniqueCode} RESPONSE user : ${JSON.stringify(result)}`
-      );
-  
-  
-      // Delete the file like normal
-      await unlinkAsync(req.file.path)
-  
-      return res.status(200).json(result);
-      
+
+        uniqueCode = helper.getUniqueCode()
+
+        const params = {
+            folder: req.params.folder,
+            file: req.params.code,
+        }
+
+        const payload = {
+            user_code: req.code,
+            user_name: req.name
+        }
+
+        // log info
+        winston.logger.info(
+            `${uniqueCode} REQUEST upload pdf : ${JSON.stringify(req.body)}`
+        );
+
+        if (req.file == undefined) {
+            result = {
+                code: "01",
+                message: "Please upload an pdf file!",
+                data: {},
+            };
+
+            // log info
+            winston.logger.info(
+                `${uniqueCode} RESPONSE delete user : ${JSON.stringify(result)}`
+            );
+
+            return res.status(200).json(result);
+        }
+        //  ini diganti menjadi nama domain
+        let file_url = await helper.getDomainName(req) + '/' + process.env.PATH_PDF + "/" + params.folder + "/" + req.file.filename;
+
+        let update = await model.uploadPdf(params, file_url, payload, db)
+
+        if (!update) {
+
+            await unlinkAsync(req.file.path)
+            result = {
+                code: "00",
+                message: "Failed.",
+                data: {
+                    params, file_url, payload
+                },
+            };
+
+            return res.status(200).json(result);
+
+        }
+
+        result = {
+            code: "00",
+            message: "Success.",
+            data: update ? update : {},
+        };
+
+        winston.logger.info(
+            `${uniqueCode} RESPONSE user : ${JSON.stringify(result)}`
+        );
+
+        return res.status(200).json(result);
+
     } catch (error) {
-          // create log
-          winston.logger.error(
-              `500 internal server error - backend server | ${error.message}`
-          );
-  
-          // Delete the file like normal
-          await unlinkAsync(req.file.path)
-  
-          return res.status(200).json({
-              code: "500",
-              message: process.env.NODE_ENV != "production" ?
-                  error.message : "500 internal server error - backend server.",
-              data: {},
-          });
+        // create log
+        winston.logger.error(
+            `500 internal server error - backend server | ${error.message}`
+        );
+
+        // Delete the file like normal
+        await unlinkAsync(req.file.path)
+
+        return res.status(200).json({
+            code: "500",
+            message: process.env.NODE_ENV != "production" ?
+                error.message : "500 internal server error - backend server.",
+            data: {},
+        });
     }
-  }
+}

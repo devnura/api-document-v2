@@ -29,7 +29,7 @@ const findAllDocument = async (trx) => {
     .orderBy(["c_document_code"], "DESC")
 
   return result;
-};
+}
 
 const findDocument = async (params, trx) => {
   let detail = []
@@ -84,7 +84,7 @@ const findDocument = async (params, trx) => {
 
     }
     return result
-};
+}
 
 const insertDocument = async (data, payload, trx) => {
 
@@ -98,11 +98,11 @@ const insertDocument = async (data, payload, trx) => {
       "c_created_by" : payload.user_code,
       "n_created_by" : payload.user_name,
       "d_created_at" : trx.raw("NOW()") 
-    }, ['i_document_excel'])
+    }, ['i_document_excel', 'c_document_code'])
     
   return result[0];
 
-};
+}
 
 const insertDocumentDetail = async (data, trx) => {
 
@@ -111,26 +111,26 @@ const insertDocumentDetail = async (data, trx) => {
 
   return result;
 
-};
+}
 
-const updateDocument = async (params, data, payload, trx) => {
-  let result = await trx("t_m_user")
+const uploadPdf = async (params, file_url, payload, trx) => {
+
+  let result = await trx("doc.t_d_document_detail")
     .update({
-      "c_group_code": data.c_group_code,
-      "c_group_name": data.c_group_name,
-      "c_email": data.c_email,
-      "c_first_name": data.c_first_name,
-      "c_last_name": data.c_last_name,
-      "c_phone_number": data.c_phone_number,
-      "c_updated_by": payload.user_code,
-      "n_updated_by": payload.user_name,
-      "d_updated_at": trx.raw("now()"),
-    }, ["c_code"])
-    .where("c_code", params)
-    .where("c_status", "A")
+      "c_file_url": file_url,
+      "c_status" : "U",
+      "c_status_name" : "UPLOADED",
+      "c_upload_by" : payload.user_code,
+      "n_upload_by" : payload.user_name,
+      "d_upload_at" : trx.raw("now()"),
 
-  return result;
-};
+    }, ["c_file_url"])
+    // .where("c_document_code", params.folder)
+    .where("c_file_code", params.file)
+    .whereNotIn("c_status", ["X"])
+
+  return result[0];
+}
 
 const deleteDocument = async (params, payload, trx) => {
 
@@ -200,8 +200,8 @@ module.exports = {
   insertDocument,
   insertDocumentDetail,
   generateCodePdf,
+  uploadPdf,
 
-  updateDocument,
   deleteDocument,
   checkDuplicatedInsert,
   generateCode,
