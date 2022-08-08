@@ -457,3 +457,84 @@ exports.uploadPdf = async (req, res) => {
         });
     }
 }
+
+exports.deleteDocument = async (req, res) => {
+    try {
+
+        uniqueCode = helper.getUniqueCode()
+
+        // log info
+        winston.logger.info(
+            `${uniqueCode} REQUEST delete document  : ${JSON.stringify(req.body)}`
+        );
+
+        // check validator
+        const err = validationResult(req, res);
+        if (!err.isEmpty()) {
+            result = {
+                code: "400",
+                message: err.errors[0].msg,
+                data: {},
+            };
+
+            // log warn
+            winston.logger.warn(
+                `${uniqueCode} RESPONSE delete user: ${JSON.stringify(result)}`
+            );
+
+            return res.status(200).json(result);
+        }
+
+        const payload = {
+            user_code: req.code,
+            user_name: req.name
+        }
+
+
+        await db.transaction(async trx => { 
+
+            const deleteDocument = await model.deleteDocument(req.params.code, payload, trx)
+            if (!deleteDocument) {
+                result = {
+                    code: "01",
+                    message: "Failed.",
+                    data: {},
+                };
+
+                // log info
+                winston.logger.info(
+                    `${uniqueCode} RESPONSE delete user : ${JSON.stringify(result)}`
+                );
+
+                return res.status(200).json(result);
+            }
+
+            result = {
+                code: "00",
+                message: "Success.",
+                data: deleteDocument,
+            };
+
+            // log info
+            winston.logger.info(
+                `${uniqueCode} RESPONSE delete user : ${JSON.stringify(result)}`
+            );
+
+        })
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        // create log
+        winston.logger.error(
+            `500 internal server error - backend server | ${error.message}`
+        );
+
+        return res.status(200).json({
+            code: "500",
+            message: process.env.NODE_ENV != "production" ?
+                error.message : "500 internal server error - backend server.",
+            data: {},
+        });
+    }
+}

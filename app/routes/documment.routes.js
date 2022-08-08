@@ -39,11 +39,11 @@ router.post(
 //   controller.resetPassword
 // );
 
-// router.delete(
-//   "/delete/:code",
-//   auth.authenticateToken,
-//   controller.deleteUser
-// );
+router.delete(
+  "/:code",
+  auth.authenticateToken,
+  controller.deleteDocument
+);
 
 router.post("/upload-excel",
   auth.authenticateToken,

@@ -134,15 +134,15 @@ const uploadPdf = async (params, file_url, payload, trx) => {
 
 const deleteDocument = async (params, payload, trx) => {
 
-  let rows = await trx('public.t_m_user').update({
+  let rows = await trx('doc.t_d_document').update({
       "c_status": "X",
       "c_status_name" : "DELETED",
       "c_deleted_by" : payload.user_code,
       "n_deleted_by" : payload.user_name,
       "d_deleted_at": trx.raw('NOW()')
-    }, ['c_code'])
+    }, ['c_document_code'])
     .where({
-      "c_code": params,
+      "c_document_code": params,
       "c_status": "A"
     })
 
