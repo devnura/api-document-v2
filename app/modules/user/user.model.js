@@ -80,9 +80,9 @@ const insertUser = async (data, payload, trx) => {
       "c_created_by" : payload.user_code ,
       "n_created_by" : payload.user_name ,
       "d_created_at" : trx.raw("NOW()") ,
-    }, ['c_code'])
+    })
     
-  return result[0];
+  return result;
 
 };
 
@@ -98,7 +98,7 @@ const updateUser = async (params, data, payload, trx) => {
       "c_updated_by": payload.user_code,
       "n_updated_by": payload.user_name,
       "d_updated_at": trx.raw("now()"),
-    }, ["c_code"])
+    })
     .where("c_code", params)
     .where("c_status", "A")
 
@@ -114,10 +114,10 @@ const resetPassword = async (params, data, payload, trx) => {
     "c_updated_by": payload.user_code,
     "n_updated_by": payload.user_name,
     "d_updated_at": trx.raw('NOW()')
-  }, ["c_code"])
+  })
   .where({
     "c_code" : params,
-    "c_status" : "A"
+    // "c_status" : "A"
   })
 
 return rows
@@ -132,7 +132,7 @@ const deleteUser = async (params, payload, trx) => {
       "c_deleted_by" : payload.user_code,
       "n_deleted_by" : payload.user_name,
       "d_deleted_at": trx.raw('NOW()')
-    }, ['c_code'])
+    })
     .where({
       "c_code": params,
       "c_status": "A"
@@ -155,7 +155,7 @@ const checkDuplicatedInsert = async (data, trx) => {
 }
 
 const generateUserCode = async (trx) => {
-  let result = await trx("t_m_user").first(trx.raw("CONCAT('U', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((COUNT(i_id)+ 1),3 , '0')) AS code")).whereRaw("SUBSTRING(c_code, 1, 10) = CONCAT('U', DATE_FORMAT(NOW(), '%y%m%d'))")
+  let result = await trx("t_m_user").first(trx.raw("CONCAT('U', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((CAST(COUNT(i_id) AS INTEGER)+ 1),3 , '0')) AS code")).whereRaw("SUBSTRING(c_code, 1, 7) = CONCAT('U', DATE_FORMAT(NOW(), '%y%m%d'))")
   return result.code
 }
 

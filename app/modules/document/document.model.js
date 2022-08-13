@@ -163,10 +163,10 @@ const checkDuplicatedInsert = async (data, trx) => {
 }
 
 const generateCode = async (trx) => {
-  let result = await trx.raw("SELECT	CONCAT('DXLS', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((COUNT(tdd.i_document_excel)+ 1),5 , '0')) AS code FROM t_d_document tdd WHERE SUBSTRING(tdd.c_document_code, 1, 10) = CONCAT('DXLS', DATE_FORMAT(NOW(), '%y%m%d'))")
-  
-  
-  return result.rows[0].code
+
+  let result = await trx("t_d_document AS tdd").first(trx.raw("CONCAT('DXLS', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((CAST(COUNT(tdd.i_document_excel) AS INTEGER)+ 1),3 , '0')) AS code")).whereRaw("SUBSTRING(c_document_code, 1, 10) = CONCAT('DXLS', DATE_FORMAT(NOW(), '%y%m%d'))")
+  return result.code
+
 }
 
 const generateCodePdf = async (trx) => {

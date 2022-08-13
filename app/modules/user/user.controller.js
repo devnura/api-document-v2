@@ -266,16 +266,18 @@ exports.insertUser = async (req, res) => {
             result = {
                 code: "00",
                 message: "Success.",
-                data: insertUser,
+                data: {},
             };
 
             // log info
             winston.logger.info(
                 `${uniqueCode} RESPONSE create user : ${JSON.stringify(result)}`
             );
+            
+            return res.status(200).json(result);
         })
 
-        return res.status(200).json(result);
+        
 
     } catch (error) {
         // create log
@@ -375,7 +377,7 @@ exports.updateUser = async (req, res) => {
             if (!updateUser) {
                 result = {
                     code: "01",
-                    message: "Fled.",
+                    message: "Failed.",
                     data: {},
                 };
 
@@ -390,7 +392,7 @@ exports.updateUser = async (req, res) => {
             result = {
                 code: "00",
                 message: "Success.",
-                data: updateUser,
+                data: {},
             };
 
             // log info
@@ -471,7 +473,7 @@ exports.deleteUser = async (req, res) => {
             result = {
                 code: "00",
                 message: "Success.",
-                data: deleteUser,
+                data: {},
             };
 
             // log info
@@ -576,7 +578,7 @@ exports.resetPassword = async (req, res) => {
             result = {
                 code: "00",
                 message: "Success.",
-                data: resetPassword,
+                data: {} ,
             };
 
             // log info
@@ -584,9 +586,11 @@ exports.resetPassword = async (req, res) => {
                 `${uniqueCode} RESPONSE reset password : ${JSON.stringify(result)}`
             );
 
+            return res.status(200).json(result);
+
         })
 
-        return res.status(200).json(result);
+        return result
 
     } catch (error) {
         // create log
