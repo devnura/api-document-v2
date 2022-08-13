@@ -98,18 +98,18 @@ const insertDocument = async (data, payload, trx) => {
       "c_created_by" : payload.user_code,
       "n_created_by" : payload.user_name,
       "d_created_at" : trx.raw("NOW()") 
-    }, ['i_document_excel', 'c_document_code'])
-    
-  return result[0];
+    })
+  let returning = await trx.select(trx.raw("LAST_INSERT_ID() as i_document_excel")).first()
+
+  return returning;
 
 }
 
 const insertDocumentDetail = async (data, trx) => {
 
   let result = await trx("t_d_document_detail")
-    .insert(data, ['c_file_code'])
-
-  return result;
+    .insert(data)
+  return result
 
 }
 
@@ -124,12 +124,12 @@ const uploadPdf = async (params, file_url, payload, trx) => {
       "n_upload_by" : payload.user_name,
       "d_upload_at" : trx.raw("now()"),
 
-    }, ["c_file_url"])
+    })
     // .where("c_document_code", params.folder)
     .where("c_file_code", params.file)
     .whereNotIn("c_status", ["X"])
 
-  return result[0];
+  return result;
 }
 
 const deleteDocument = async (params, payload, trx) => {
@@ -140,7 +140,7 @@ const deleteDocument = async (params, payload, trx) => {
       "c_deleted_by" : payload.user_code,
       "n_deleted_by" : payload.user_name,
       "d_deleted_at": trx.raw('NOW()')
-    }, ['c_document_code'])
+    })
     .where({
       "c_document_code": params,
       "c_status": "A"
@@ -170,9 +170,8 @@ const generateCode = async (trx) => {
 }
 
 const generateCodePdf = async (trx) => {
-  let result = await trx.raw("SELECT	CONCAT('DPDF', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((COUNT(tdd.i_document_excel)+ 1),5 , '0')) AS code FROM t_d_document_detail tdd WHERE SUBSTRING(tdd.c_file_code, 1, 10) = CONCAT('DPDF', DATE_FORMAT(NOW(), '%y%m%d'))")
-
-  return result.rows[0].code
+  let result = await trx("t_d_document_detail AS tdd").first(trx.raw("CONCAT('DPDF', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((CAST(COUNT(tdd.i_document_excel) AS INTEGER)+ 1),3 , '0')) AS code")).whereRaw("SUBSTRING(c_file_code, 1, 10) = CONCAT('DPDF', DATE_FORMAT(NOW(), '%y%m%d'))")
+  return result.code
 }
 
 const checkUpdate = async (params, data, before, trx) => {

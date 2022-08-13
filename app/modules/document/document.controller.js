@@ -175,6 +175,9 @@ exports.find = async (req, res) => {
 }
 
 exports.create = async (req, res) => {
+
+    // const trx = db;
+
     try {
 
         uniqueCode = helper.getUniqueCode()
@@ -209,7 +212,6 @@ exports.create = async (req, res) => {
             user_code: req.code,
             user_name: req.name
         }
-
         await db.transaction(async trx => {
 
             // log debug
@@ -231,7 +233,7 @@ exports.create = async (req, res) => {
 
             if (!document) {
 
-                await trx.rollback;
+                trx.rollback;
 
                 result = {
                     code: "01",
@@ -250,23 +252,26 @@ exports.create = async (req, res) => {
             if (!fs.existsSync(`${process.cwd()}${dir}`)) {
                 fs.mkdirSync(`${process.cwd()}${dir}`, {
                     recursive: true
-                  });
+                    });
             }
-
+            
             for (const item of body.detail) {
+
                 let code = await model.generateCodePdf(trx)
+                console.log(code)
                 let data = {
                     "i_document_excel": document.i_document_excel,
                     "c_file_code": code,
                     "c_file_name": item.file_name.toLowerCase(),
                     "c_category": item.category,
-                    "c_document_code": document.c_document_code
+                    "c_document_code": documentCode
                 }
+                
                 await model.insertDocumentDetail(data, trx)
             }
-
+            
             // insert detail
-
+            
             result = {
                 code: "00",
                 message: "Success.",
@@ -275,14 +280,17 @@ exports.create = async (req, res) => {
                 },
             };
 
+            
             // log info
             winston.logger.info(
                 `${uniqueCode} RESPONSE create user : ${JSON.stringify(result)}`
             );
 
+            trx.commit
+
+            return res.status(200).json(result);
         })
 
-        return res.status(200).json(result);
 
     } catch (error) {
         // create log
