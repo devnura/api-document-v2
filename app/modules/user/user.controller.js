@@ -206,7 +206,7 @@ exports.insertUser = async (req, res) => {
         await db.transaction(async trx => {
             // check data login
             let checkDuplicate = await model.checkDuplicatedInsert(body, trx)
-
+            
             if (checkDuplicate) {
 
                 result = {

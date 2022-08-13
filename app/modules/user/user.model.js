@@ -14,16 +14,16 @@ const getUsers = async (trx) => {
       "tmu.c_status_name",
       "tmu.c_created_by",
       "tmu.n_created_by",
-      trx.raw("TO_CHAR(tmu.d_created_at, 'YYYY-MM-DD HH:mm:SS') AS d_created_at"),
+      trx.raw("DATE_FORMAT(tmu.d_created_at, '%Y-%m-%d %H:%i:%S') AS d_created_at"),
       "tmu.c_updated_by",
       "tmu.n_updated_by",
-      trx.raw("TO_CHAR(tmu.d_updated_at, 'YYYY-MM-DD HH:mm:SS') AS d_updated_at"),
+      trx.raw("DATE_FORMAT(tmu.d_updated_at, '%Y-%m-%d %H:%i:%S') AS d_updated_at"),
       "tmu.c_deleted_by",
       "tmu.n_deleted_by",
-      trx.raw("TO_CHAR(tmu.d_deleted_at, 'YYYY-MM-DD HH:mm:SS') AS d_deleted_at"),
+      trx.raw("DATE_FORMAT(tmu.d_deleted_at, '%Y-%m-%d %H:%i:%S') AS d_deleted_at"),
     )
-    .from('public.t_m_user as tmu')
-    .leftJoin('public.t_m_group as tmg', function () {
+    .from('t_m_user as tmu')
+    .leftJoin('t_m_group as tmg', function () {
       this.on('tmg.c_group_code', '=', 'tmu.c_group_code')
     })
     .orderBy("tmu.c_code", "DESC")
@@ -47,16 +47,16 @@ const getUser = async (params, trx) => {
       "tmu.c_status_name",
       "tmu.c_created_by",
       "tmu.n_created_by",
-      trx.raw("TO_CHAR(tmu.d_created_at, 'YYYY-MM-DD HH:mm:SS') AS d_created_at"),
+      trx.raw("DATE_FORMAT(tmu.d_created_at, '%Y-%m-%d %H:%i:%S') AS d_created_at"),
       "tmu.c_updated_by",
       "tmu.n_updated_by",
-      trx.raw("TO_CHAR(tmu.d_updated_at, 'YYYY-MM-DD HH:mm:SS') AS d_updated_at"),
+      trx.raw("DATE_FORMAT(tmu.d_updated_at, '%Y-%m-%d %H:%i:%S') AS d_updated_at"),
       "tmu.c_deleted_by",
       "tmu.n_deleted_by",
-      trx.raw("TO_CHAR(tmu.d_deleted_at, 'YYYY-MM-DD HH:mm:SS') AS d_deleted_at"),
+      trx.raw("DATE_FORMAT(tmu.d_deleted_at, '%Y-%m-%d %H:%i:%S') AS d_deleted_at"),
     ])
-    .from('public.t_m_user as tmu')
-    .leftJoin('public.t_m_group as tmg', function () {
+    .from('t_m_user as tmu')
+    .leftJoin('t_m_group as tmg', function () {
       this.on('tmg.c_group_code', '=', 'tmu.c_group_code')
     })
     .where("tmu.c_code", params)
@@ -108,7 +108,7 @@ const updateUser = async (params, data, payload, trx) => {
 // UPDATE PASSWORD
 const resetPassword = async (params, data, payload, trx) => {
   
-  let rows = await trx("public.t_m_user").update({
+  let rows = await trx("t_m_user").update({
     "e_password" : data.passwordHash,
     "c_knowing_password" : data.knowingPassword,
     "c_updated_by": payload.user_code,
@@ -126,7 +126,7 @@ return rows
 // DELETE USER
 const deleteUser = async (params, payload, trx) => {
 
-  let rows = await trx('public.t_m_user').update({
+  let rows = await trx('t_m_user').update({
       "c_status": "X",
       "c_status_name" : "DELETED",
       "c_deleted_by" : payload.user_code,
@@ -155,9 +155,8 @@ const checkDuplicatedInsert = async (data, trx) => {
 }
 
 const generateUserCode = async (trx) => {
-  let result = await trx.raw("SELECT 'U'||to_char(NOW(), 'YYMMDD')||LPAD((COUNT(i_id)+1)::text, 3, '0') AS user_code FROM t_m_user tmu WHERE substring(c_code, 0,8) = 'U'||to_char(now(), 'YYMMDD')")
-
-  return result.rows[0].user_code
+  let result = await trx("t_m_user").first(trx.raw("CONCAT('U', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((COUNT(i_id)+ 1),3 , '0')) AS code")).whereRaw("SUBSTRING(c_code, 1, 10) = CONCAT('U', DATE_FORMAT(NOW(), '%y%m%d'))")
+  return result.code
 }
 
 const checkUpdate = async (params, data, before, trx) => {

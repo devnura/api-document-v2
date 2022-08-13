@@ -2,7 +2,7 @@ const knex = require("../../../infrastructure/database/knex");
 
 // CHECK REFRESH TOKEN IN DATABASE
 const checkRefreshToken = (code, refreshToken) => {
-  let result = knex("t_m_refresh_token")
+  let result = knex("t_d_refresh_token")
     .where("c_refresh_token", refreshToken)
     .where("c_user_code", code)
     .first();
@@ -11,7 +11,7 @@ const checkRefreshToken = (code, refreshToken) => {
 
 // INSERT REFRESH TOKEN
 const insertRefreshToken = (code, refreshToken) => {
-  let result = knex("t_m_refresh_token").insert({
+  let result = knex("t_d_refresh_token").insert({
     c_user_code: code,
     c_refresh_token: refreshToken,
   });
@@ -21,7 +21,7 @@ const insertRefreshToken = (code, refreshToken) => {
 // DELETE REFRESH TOKEN
 const deleteRefreshToken = (code) => {
 
-  let result = knex("t_m_refresh_token").where({
+  let result = knex("t_d_refresh_token").where({
     c_user_code: code,
   })
   .delete();
@@ -31,7 +31,7 @@ const deleteRefreshToken = (code) => {
 
 // UPDATE REFRESH TOKEN
 const updateRefreshToken = (code, oldRefreshToken, newRefreshToken) => {
-  let result = knex("t_m_refresh_token")
+  let result = knex("t_d_refresh_token")
     .where("c_user_code", code)
     .where("c_refresh_token", oldRefreshToken)
     .update({
@@ -50,7 +50,7 @@ const checkUser = (email) => {
 };
 
 const checUserLogin = (code) => {
-  let result = knex("t_m_refresh_token")
+  let result = knex("t_d_refresh_token")
     .where("c_user_code", code)
     .first()
   return result;

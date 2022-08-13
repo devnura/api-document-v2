@@ -74,7 +74,7 @@ const loginUser = async (req, res) => {
     if (!checkUser) {
       result = {
         code: "403",
-        message: "User doesn't exists.",
+        message: "INVALID USERNAME OR PASSWORD.",
         data: {},
       };
 
@@ -97,7 +97,7 @@ const loginUser = async (req, res) => {
     if (!checkPassword) {
       result = {
         code: "403",
-        message: "Password is wrong.",
+        message: "INVALID USERNAME OR PASSWORD.",
         data: {},
       };
 

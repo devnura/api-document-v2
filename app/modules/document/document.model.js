@@ -4,11 +4,11 @@ const findAllDocument = async (trx) => {
       "tdd.c_document_code",
       "tdd.c_document_name",
       "tdd.c_document_path",
-      trx.raw("tdd.q_document_item::varchar"),
+      "tdd.q_document_item",
       trx.raw(`(SELECT
           COUNT(tddd.c_file_code)
         FROM
-          doc.t_d_document_detail tddd
+          t_d_document_detail tddd
         WHERE
           tddd.i_document_excel = tdd.i_document_excel
           AND tddd.c_status = 'U') AS q_uploaded_document`),
@@ -17,15 +17,15 @@ const findAllDocument = async (trx) => {
       "tdd.c_status_name",
       "tdd.c_created_by",
       "tdd.n_created_by",
-      trx.raw("TO_CHAR(tdd.d_created_at, 'YYYY-MM-DD HH:mm:SS') AS d_created_at"),
+      trx.raw("DATE_FORMAT(d_created_at, '%Y-%m-%d %H:%i:%S') AS d_created_at"),
       "tdd.c_updated_by",
       "tdd.n_updated_by",
-      trx.raw("TO_CHAR(tdd.d_updated_at, 'YYYY-MM-DD HH:mm:SS') AS d_updated_at"),
+      trx.raw("DATE_FORMAT(d_updated_at, '%Y-%m-%d %H:%i:%S') AS d_updated_at"),
       "tdd.c_deleted_by",
       "tdd.n_deleted_by",
-      trx.raw("TO_CHAR(tdd.d_deleted_at, 'YYYY-MM-DD HH:mm:SS') AS d_deleted_at"),
+      trx.raw("DATE_FORMAT(d_deleted_at, '%Y-%m-%d %H:%i:%S') AS d_deleted_at"),
     )
-    .from('doc.t_d_document as tdd')
+    .from('t_d_document as tdd')
     .orderBy(["c_document_code"], "DESC")
 
   return result;
@@ -44,7 +44,7 @@ const findDocument = async (params, trx) => {
       trx.raw(`(SELECT
         COUNT(tddd.c_file_code)
       FROM
-        doc.t_d_document_detail tddd
+        t_d_document_detail tddd
       WHERE
         tddd.i_document_excel = tdd.i_document_excel
         AND tddd.c_status = 'U') AS q_uploaded_document`),
@@ -53,15 +53,15 @@ const findDocument = async (params, trx) => {
       "tdd.c_status_name",
       "tdd.c_created_by",
       "tdd.n_created_by",
-      trx.raw("TO_CHAR(tdd.d_created_at, 'YYYY-MM-DD HH:mm:SS') AS d_created_at"),
+      trx.raw("DATE_FORMAT(d_created_at, '%Y-%m-%d %H:%i:%S') AS d_created_at"),
       "tdd.c_updated_by",
       "tdd.n_updated_by",
-      trx.raw("TO_CHAR(tdd.d_updated_at, 'YYYY-MM-DD HH:mm:SS') AS d_updated_at"),
+      trx.raw("DATE_FORMAT(d_updated_at, '%Y-%m-%d %H:%i:%S') AS d_updated_at"),
       "tdd.c_deleted_by",
       "tdd.n_deleted_by",
-      trx.raw("TO_CHAR(tdd.d_deleted_at, 'YYYY-MM-DD HH:mm:SS') AS d_deleted_at"),
+      trx.raw("DATE_FORMAT(d_deleted_at, '%Y-%m-%d %H:%i:%S') AS d_deleted_at"),
     )
-    .from('doc.t_d_document as tdd')
+    .from('t_d_document as tdd')
     .where("c_document_code", params)
     .first();
     
@@ -76,7 +76,7 @@ const findDocument = async (params, trx) => {
         "tddd.c_status",
         "tddd.c_status_name",
       )
-      .from('doc.t_d_document_detail as tddd')
+      .from('t_d_document_detail as tddd')
       .where("tddd.i_document_excel", result.i_document_excel)
       result = {...result, ...{detail : detail}}
       
@@ -88,7 +88,7 @@ const findDocument = async (params, trx) => {
 
 const insertDocument = async (data, payload, trx) => {
 
-  let result = await trx("doc.t_d_document")
+  let result = await trx("t_d_document")
     .insert({
       "c_document_code" : data.c_document_code,
       "c_document_name" : data.c_document_name,
@@ -106,7 +106,7 @@ const insertDocument = async (data, payload, trx) => {
 
 const insertDocumentDetail = async (data, trx) => {
 
-  let result = await trx("doc.t_d_document_detail")
+  let result = await trx("t_d_document_detail")
     .insert(data, ['c_file_code'])
 
   return result;
@@ -115,7 +115,7 @@ const insertDocumentDetail = async (data, trx) => {
 
 const uploadPdf = async (params, file_url, payload, trx) => {
 
-  let result = await trx("doc.t_d_document_detail")
+  let result = await trx("t_d_document_detail")
     .update({
       "c_file_url": file_url,
       "c_status" : "U",
@@ -134,7 +134,7 @@ const uploadPdf = async (params, file_url, payload, trx) => {
 
 const deleteDocument = async (params, payload, trx) => {
 
-  let rows = await trx('doc.t_d_document').update({
+  let rows = await trx('t_d_document').update({
       "c_status": "X",
       "c_status_name" : "DELETED",
       "c_deleted_by" : payload.user_code,
@@ -163,13 +163,14 @@ const checkDuplicatedInsert = async (data, trx) => {
 }
 
 const generateCode = async (trx) => {
-  let result = await trx.raw("SELECT 'DXLS'||to_char(NOW(), 'YYMMDD')||LPAD((COUNT(i_document_excel)+1)::text, 5, '0') AS code FROM doc.t_d_document tdd WHERE substring(c_document_code, 1,10) = 'DXLS'||to_char(now(), 'YYMMDD')")
-
+  let result = await trx.raw("SELECT	CONCAT('DXLS', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((COUNT(tdd.i_document_excel)+ 1),5 , '0')) AS code FROM t_d_document tdd WHERE SUBSTRING(tdd.c_document_code, 1, 10) = CONCAT('DXLS', DATE_FORMAT(NOW(), '%y%m%d'))")
+  
+  
   return result.rows[0].code
 }
 
 const generateCodePdf = async (trx) => {
-  let result = await trx.raw("SELECT 'DPDF'||to_char(NOW(), 'YYMMDD')||LPAD((COUNT(i_document_excel)+1)::text, 5, '0') AS code FROM doc.t_d_document_detail tdd WHERE substring(c_file_code, 1,10) = 'DPDF'||to_char(now(), 'YYMMDD')")
+  let result = await trx.raw("SELECT	CONCAT('DPDF', DATE_FORMAT(NOW(), '%y%m%d'), LPAD((COUNT(tdd.i_document_excel)+ 1),5 , '0')) AS code FROM t_d_document_detail tdd WHERE SUBSTRING(tdd.c_file_code, 1, 10) = CONCAT('DPDF', DATE_FORMAT(NOW(), '%y%m%d'))")
 
   return result.rows[0].code
 }
