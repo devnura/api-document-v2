@@ -26,6 +26,7 @@ const authRoute = require("./app/routes/auth.routes");
 const userRoute = require("./app/routes/user.routes");
 const documentRoute = require("./app/routes/documment.routes");
 const groupRoute = require("./app/routes/group.routes");
+const dashboardRoute = require("./app/routes/dashboard.routes");
 
 // app.use('/static', express.static('public'))
 app.use("/"+process.env.PATH_PDF, express.static(path.join(__dirname, process.env.PATH_PDF)))
@@ -44,6 +45,9 @@ router.use("/auth", authRoute);
 router.use("/user", userRoute);
 router.use("/document", documentRoute);
 router.use("/group", groupRoute);
+router.use("/dashboard", dashboardRoute);
+// router.get("/dashboard", (req,res) => {return res.send({"a": 1})});
+
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8000;

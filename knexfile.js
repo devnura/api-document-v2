@@ -8,7 +8,7 @@ module.exports = {
       port : 3306,
       user : 'root',
       password : '',
-      database : 'DB_DOCUEMNT_V2_DEV'
+      database : 'DB_DOCUMENT_DEV'
     },
     migrations: {
       directory: "./infrastructure/database/migrations",
