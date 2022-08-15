@@ -55,4 +55,10 @@ app.listen(PORT, () => {
   winston.logger.info(`Server is running on environment: ${process.env.NODE_ENV.toUpperCase()}`);
 });
 
-// console.log(__basedir + "/resources/static/assets/uploads/")
+console.log({
+  host : process.env.DB_HOST,
+  port : process.env.DB_PORT,
+  user : process.env.DB_USERNAME,
+  password : process.env.DB_PASSWORD,
+  database : process.env.DB_NAME
+})
