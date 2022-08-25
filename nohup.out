@@ -1,0 +1,28 @@
+{
+  host: 'localhost',
+  port: '3306',
+  user: 'onle2979_root',
+  password: 'ZT?qC)PW%Lx$',
+  database: 'onle2979_DB_DOCUMENT'
+}
+App running on port : 9000 [
+  [ RowDataPacket { 'now()': 2022-08-15T09:27:16.000Z } ],
+  [
+    FieldPacket {
+      catalog: 'def',
+      db: '',
+      table: '',
+      orgTable: '',
+      name: 'now()',
+      orgName: '',
+      charsetNr: 63,
+      length: 19,
+      type: 12,
+      flags: 129,
+      decimals: 0,
+      default: undefined,
+      zeroFill: false,
+      protocol41: true
+    }
+  ]
+]

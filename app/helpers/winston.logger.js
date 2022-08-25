@@ -34,7 +34,7 @@ let logger;
 // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
 //
 if (process.env.NODE_ENV == "production") {
-  let logger = winston.createLogger({
+  logger = winston.createLogger({
     levels: logLevels,
     level: process.env.LOG_LEVEL || "info",
     exitOnError: false,

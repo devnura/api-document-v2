@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const knex = require("./infrastructure/database/knex");
 
 // const url =  require('url');
 const path =  require('path');
@@ -51,8 +52,18 @@ router.use("/dashboard", dashboardRoute);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  winston.logger.info(`Server is running on environment: ${process.env.NODE_ENV.toUpperCase()}`);
+app.listen(PORT, async () => {
+  console.log({
+    host : process.env.DB_HOST,
+    port : process.env.DB_PORT,
+    user : process.env.DB_USERNAME,
+    password : process.env.DB_PASSWORD,
+    database : process.env.DB_NAME
+  })
+  
+  const query = await knex.raw('select now()')
+
+  console.log('App running on port :', PORT, query)
+  winston.logger?.info(`Server is running on environment: ${process.env.NODE_ENV.toUpperCase()}`);
 });
 
-// console.log(__basedir + "/resources/static/assets/uploads/")

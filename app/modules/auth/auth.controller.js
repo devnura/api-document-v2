@@ -172,15 +172,16 @@ const loginUser = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
+    console.log(error)
     // create log
-    winston.logger.error(
-      `500 internal server error - backend server | ${error.message}`
+    winston.logger?.error(
+      `500 internal server error - backend server | ${error?.message}`
     );
 
     return res.status(200).json({
       code: "500",
       message: process.env.NODE_ENV != "production" ?
-        error.message :
+        error?.message :
         "500 internal server error - backend server.",
       data: {},
     });
